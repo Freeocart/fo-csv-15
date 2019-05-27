@@ -1,5 +1,5 @@
 #!/bin/bash
-out=foc_csv.ocmod.zip
+out=foc_csv_15.zip
 if [[ -f "$out" ]]; then
   rm $out
 fi
