@@ -2,7 +2,7 @@
 /*
   FOC CSV common methods both for exporter/importer
 */
-class ModelExtensionModuleFocCsvCommon extends Model {
+class ModelModuleFocCsvCommon extends Model {
 
   const VERSION = '0.0.99';
 
@@ -45,13 +45,13 @@ class ModelExtensionModuleFocCsvCommon extends Model {
     )
   );
 
-  public function __construct ($registry, $type = 'importer') {
-    parent::__construct($registry);
-    $this->log = new Log('foc_csv_' . $type . '.txt');
-    $this->type = $type;
-    $this->profiles_code = 'foc_csv_' . $type;
-    $this->profiles_key = 'foc_csv_' . $type . '_profiles';
+  // db encoding -> iconv encoding
+  protected $charsetMap = array();
 
+  public function __construct ($registry) {
+    parent::__construct($registry);
+    $this->scanOpencartVersion();
+    $this->log = new Log('foc_csv_' . $this->type . '.txt');
     $this->load->library('FocSimpleTemplater');
   }
 
@@ -151,7 +151,8 @@ class ModelExtensionModuleFocCsvCommon extends Model {
   public function loadProfiles () {
     $this->load->model('setting/setting');
 
-    $profiles = json_decode($this->model_setting_setting->getSettingValue($this->profiles_key), true);
+    $profiles_data = $this->model_setting_setting->getSetting($this->profiles_code, $this->config->get('store_id'));
+    $profiles = $profiles_data[$this->profiles_key];
 
     if (count($profiles) === 0) {
       $profiles = $this->getDefaultProfiles();
@@ -281,26 +282,59 @@ class ModelExtensionModuleFocCsvCommon extends Model {
     return $this->db->query('SELECT @@character_set_database AS `charset`')->row['charset'];
   }
 
+  public function dbToIconvCharset ($charset) {
+    if (isset($this->charsetMap[$charset])) {
+      return $this->charsetMap[$charset];
+    }
+    return $charset;
+  }
+
   public function getLanguageCode () {
     $lang = $this->language->get('code');
     return strtolower(substr($lang, 0, 2));
   }
 
   /*
-    Just OC version checker used to provide forward/backward compatibility
+    Scan version
   */
-  public function isOpencart3 () {
+  public function scanOpencartVersion () {
     $digits = explode('.', VERSION);
-    // check only first digit - ocStore uses 5 digits versioning system
-    $major_version = (int)array_shift($digits);
-    return $major_version > 2;
+
+    // ocstore uses 5-digits versions
+    if (count($digits) > 4) {
+      $this->is_ocstore = true;
+      array_pop($digits);
+    }
+
+    $this->normalized_version = intval(implode('', $digits));
+  }
+
+  /*
+    Version checkers
+  */
+  public function getOpencartMajorVersion () {
+    return floor($this->normalized_version / 1000);
+  }
+  public function isOpencart15 () {
+    return $this->normalized_version < 2000;
+  }
+
+  public function isOpencart2 () {
+    return $this->normalized_version >= 2000 && $this->normalized_version < 2300;
+  }
+  public function isOpencart23 () {
+    return $this->normalized_version >= 2300 && $this->normalized_version < 3000;
+  }
+
+  public function isOpencart3 () {
+    return $this->normalized_version >= 3000;
   }
 
   /*
     Check is this a ocStore
   */
   public function isOcstore () {
-    return count(explode('.', VERSION)) > 4;
+    return $this->is_ocstore;
   }
 
 }

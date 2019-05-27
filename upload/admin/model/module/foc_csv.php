@@ -2,7 +2,10 @@
 /*
   Model for FOC CSV Importer
 */
-class ModelExtensionModuleFocCsv extends ModelExtensionModuleFocCsvCommon {
+class ModelModuleFocCsv extends ModelModuleFocCsvCommon {
+  public $type = 'importer';
+  public $profiles_code = 'foc_csv_importer';
+  public $profiles_key = 'foc_csv_importer_profiles';
 
   private $csvImportFileName = 'import.csv';
   private $imagesZipImportFileName = 'images.zip';
@@ -25,8 +28,8 @@ class ModelExtensionModuleFocCsv extends ModelExtensionModuleFocCsvCommon {
       mkdir(DIR_IMAGE . $this->imageSavePath, 0755, true);
     }
 
-    $this->language->load('extension/module/foc_csv');
-    $this->language->load('extension/module/foc_attribute_parsers');
+    $this->language->load('module/foc_csv');
+    $this->language->load('module/foc_attribute_parsers');
 
     $this->attributeParsers['advantshop'] = array(
       'title' => $this->language->get('parser_advantshop'),
@@ -89,6 +92,7 @@ class ModelExtensionModuleFocCsv extends ModelExtensionModuleFocCsvCommon {
   }
 
   public function install () {
+    // $this->setType('importer');
     parent::install();
   }
 
@@ -97,7 +101,7 @@ class ModelExtensionModuleFocCsv extends ModelExtensionModuleFocCsvCommon {
   */
   public function getDefaultProfile () {
     return array(
-      'encoding' => 'UTF8',
+      'encoding' => 'none',
       'csvFieldDelimiter' => ';',
       'categoryDelimiter' => '/',
       'categoryLevelDelimiter' => '>>',

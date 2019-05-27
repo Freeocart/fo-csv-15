@@ -2,7 +2,11 @@
 /*
   Model for FOC CSV Exporter
 */
-class ModelExtensionModuleFocCsvExporter extends ModelExtensionModuleFocCsvCommon {
+
+class ModelModuleFocCsvExporter extends ModelModuleFocCsvCommon {
+  public $type = 'exporter';
+  public $profiles_code = 'foc_csv_exporter';
+  public $profiles_key = 'foc_csv_exporter_profiles';
 
   protected $exportPath = '';
   protected $csvExportFileName = 'export.csv';
@@ -19,8 +23,10 @@ class ModelExtensionModuleFocCsvExporter extends ModelExtensionModuleFocCsvCommo
   public function __construct ($registry) {
     parent::__construct($registry, 'exporter');
 
-    $this->language->load('extension/module/foc_csv');
-    $this->language->load('extension/module/foc_attribute_encoders');
+    $this->load->library('FocSimpleTemplater');
+
+    $this->language->load('module/foc_csv');
+    $this->language->load('module/foc_attribute_encoders');
 
     $this->attributeEncoders['advantshop'] = array(
       'title' => $this->language->get('encoder_advantshop'),
@@ -90,6 +96,7 @@ class ModelExtensionModuleFocCsvExporter extends ModelExtensionModuleFocCsvCommo
   }
 
   public function install () {
+    // $this->setType('exporter');
     parent::install();
   }
 
@@ -109,7 +116,7 @@ class ModelExtensionModuleFocCsvExporter extends ModelExtensionModuleFocCsvCommo
   public function getDefaultProfile () {
     return array(
       'entriesPerQuery' => 10,
-      'encoding' => 'UTF8',
+      'encoding' => 'none',
       'dumpParentCategories' => false,
       'categoriesNestingDelimiter' => '|',
       'categoriesDelimiter' => '\n',
@@ -207,7 +214,7 @@ class ModelExtensionModuleFocCsvExporter extends ModelExtensionModuleFocCsvCommo
         // multicolumn mode
         if (is_array($attributes)) {
           if (count($attributes) > 0
-              && $this->model_extension_module_foc_csv_exporter->isMulticolumnEncoder($profile['attributeEncoder'])
+              && $this->model_module_foc_csv_exporter->isMulticolumnEncoder($profile['attributeEncoder'])
           ) {
             $maxKey = max(array_keys($attributes));
             for ($i = count($csvLine); $i <= $maxKey; $i++) {
@@ -226,7 +233,7 @@ class ModelExtensionModuleFocCsvExporter extends ModelExtensionModuleFocCsvCommo
           $csvLine[] = $attributes;
         }
       }
-
+      // var_dump($csvLine);die;
       if (!empty($csvLine)) {
         $csvLines[] = $csvLine;
       }
@@ -250,6 +257,7 @@ class ModelExtensionModuleFocCsvExporter extends ModelExtensionModuleFocCsvCommo
     $categoriesNestingDelimiter = $profile['categoriesNestingDelimiter'];
 
     $product = $this->model_catalog_product->getProduct($primary);
+
     $result = array(
       'product_id' => $primary,
       'product' => array()
@@ -258,7 +266,6 @@ class ModelExtensionModuleFocCsvExporter extends ModelExtensionModuleFocCsvCommo
     // product data
     if (isset($schema['product']) && !empty($schema['product'])) {
       $result['product'] = array_intersect_key($product, array_flip($schema['product']));
-
       if (in_array('image', $schema['product'])
           && !is_null($result['product']['image'])
           && trim($result['product']['image']) != ''
@@ -543,7 +550,7 @@ class ModelExtensionModuleFocCsvExporter extends ModelExtensionModuleFocCsvCommo
   */
   // save encoder map data to file
   public function saveEncoderMap () {
-    $path = $this->model_extension_module_foc_csv_exporter->getUploadPath($this->uploadKey);
+    $path = $this->model_module_foc_csv_exporter->getUploadPath($this->uploadKey);
     file_put_contents($path . 'map.json', json_encode($this->attributeEncoderMap));
   }
 
@@ -553,7 +560,7 @@ class ModelExtensionModuleFocCsvExporter extends ModelExtensionModuleFocCsvCommo
 
     if (!$loaded) {
       $loaded = true;
-      $path = $this->model_extension_module_foc_csv_exporter->getUploadPath($this->uploadKey);
+      $path = $this->model_module_foc_csv_exporter->getUploadPath($this->uploadKey);
       $this->attributeEncodeMap = json_decode(file_get_contents($path . 'map.json'), true);
     }
   }
