@@ -349,7 +349,7 @@ class ModelModuleFocCsv extends ModelModuleFocCsvCommon {
         $this->updateExisting = false;
       break;
       case 'updateCreate':
-      case 'removeOthers': // removeOthers is loike updateCreate but before this - we have empty db!
+      case 'removeOthers': // removeOthers is like updateCreate but before this - we have empty db!
         // default settings...
       break;
       case 'addIfNotFound':
