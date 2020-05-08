@@ -11,10 +11,10 @@
     "dev-oc": "yarn run --cwd=./frontend/foc_csv build && cp -R upload $SITE_DIR"
   },
   "dependencies": {
-    "gulp": "^3.9.1",
-    "gulp-zip": "^4.1.0"
+    "gulp": "^4.0.2",
+    "gulp-zip": "^5.0.1"
   },
   "devDependencies": {
-    "yarn": "^1.13.0"
+    "yarn": "^1.22.4"
   }
 }

@@ -6,11 +6,11 @@ gulp.task('mktest', () => {
       .pipe(gulp.dest(process.env.SITE_DIR));
 });
 
-gulp.task('test', ['mktest'], () => {
+gulp.task('test', gulp.series(['mktest'], () => {
   gulp.watch('./upload/**', () => {
     gulp.start('mktest');
   });
-});
+}));
 
 gulp.task('build', () => {
   gulp.src('./upload/*')
